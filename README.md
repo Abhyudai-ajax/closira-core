@@ -195,7 +195,8 @@ Located at `mobile-app/mock/enquiries.json` — 5 realistic entries structured e
 
 ## Video Walkthrough
 
-[Link to video walkthrough]
+https://drive.google.com/file/d/14sRBOE4KK3OGZaJZ8uOQA2AxyLuA0rMD/view?usp=drivesdk
+
 
 ---
 
