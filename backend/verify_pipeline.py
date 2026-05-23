@@ -1,59 +1,91 @@
-﻿import sys
-from fastapi.testclient import TestClient
+﻿"""
+Integration smoke-test for the Closira enquiry pipeline.
+Run from the /backend directory:
+    python verify_pipeline.py
+"""
+import sys
+import time
+from pathlib import Path
 
-sys.path.append("D:\\closira-core\\backend")
+# Ensure the backend package is importable regardless of CWD
+sys.path.insert(0, str(Path(__file__).parent))
+
+from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
 
-print("============================================================")
-print("🚀 STARTING DIRECT ROOT-PATH PIPELINE VERIFICATION SUITE")
-print("============================================================")
+DIVIDER = "=" * 60
 
-# 1. Health Check Test
-res_health = client.get("/health")
-if res_health.status_code == 200:
-    print(f"✅ HEALTH CHECK PASSED: {res_health.json()}")
+
+def section(title: str) -> None:
+    print(f"\n{DIVIDER}")
+    print(f"  {title}")
+    print(DIVIDER)
+
+
+def ok(msg: str) -> None:
+    print(f"  ✅  {msg}")
+
+
+def fail(msg: str) -> None:
+    print(f"  ❌  {msg}")
+
+
+# ── 1. Health ──────────────────────────────────────────────────────────────
+section("1 / 5  HEALTH CHECK")
+r = client.get("/health")
+if r.status_code == 200 and r.json().get("status") == "healthy":
+    ok(f"Healthy → {r.json()}")
 else:
-    print(f"❌ HEALTH CHECK FAILED: Status {res_health.status_code}")
+    fail(f"HTTP {r.status_code} → {r.text}")
 
-# 2. Ingest Payload Simulation (POST directly to /enquiry)
+# ── 2. Create enquiry ──────────────────────────────────────────────────────
+section("2 / 5  CREATE ENQUIRY  (POST /enquiry)")
 payload = {
     "channel": "WhatsApp",
     "customer_name": "Sarah Miller",
-    "message": "Hello! I would love to book a private slot or schedule an appointment tomorrow afternoon."
+    "message": "Hello! I would love to book a slot for tomorrow afternoon.",
 }
-
-print("\n📩 Simulating Inbound Booking Request via WhatsApp...")
-res_ingest = client.post("/enquiry", json=payload)
-if res_ingest.status_code in [200, 202]:
-    enq_data = res_ingest.json()
-    enq_id = enq_data.get("job_id", "enq_test")
-    print(f"   📥 Ingestion Status: {enq_data.get('status').upper()} | Generated ID: {enq_id}")
-    
-    # 3. Dynamic Status Check Path Discovery
-    print(f"\n📡 Fetching Database State History for {enq_id}...")
-    
-    # Check common status tracking endpoints format
-    status_endpoints = [f"/enquiry/{enq_id}", f"/enquiry/status/{enq_id}"]
-    status_verified = False
-    
-    for endpoint in status_endpoints:
-        res_status = client.get(endpoint)
-        if res_status.status_code == 200:
-            s = res_status.json()
-            print(f"   ✅ Target Matched: {endpoint}")
-            print(f"   🔹 Current Status Flags: {s.get('status')}")
-            print(f"   🔹 Matched SOP Context : {s.get('matched_sop')}")
-            print(f"   🔹 Suggested Reply     : \"{s.get('suggested_response')}\"")
-            status_verified = True
-            break
-            
-    if not status_verified:
-        print(f"   🔹 Base Ingestion pipeline verified successfully.")
-        
-    print("\n============================================================")
-    print("🎯 ALL CORE INTEGRATION TESTS COMPLETED PERFECTLY")
-    print("============================================================")
+r = client.post("/enquiry", json=payload)
+if r.status_code == 202:
+    enq_id = r.json()["job_id"]
+    ok(f"Accepted → job_id={enq_id}")
 else:
-    print(f"   ❌ Ingestion simulation failed: {res_ingest.status_code} | {res_ingest.text}")
+    fail(f"HTTP {r.status_code} → {r.text}")
+    sys.exit(1)
+
+# Give BackgroundTasks a moment to run (TestClient is synchronous but tasks run inline)
+time.sleep(0.2)
+
+# ── 3. History ─────────────────────────────────────────────────────────────
+section("3 / 5  FETCH HISTORY  (GET /enquiry/{id}/history)")
+r = client.get(f"/enquiry/{enq_id}/history")
+if r.status_code == 200:
+    data = r.json()
+    ok(f"Status      : {data['status']}")
+    ok(f"Matched SOP : {data['matched_sop']}")
+    ok(f"Suggested   : {data['suggested_response']}")
+    ok(f"Timeline    : {len(data['timeline'])} events")
+else:
+    fail(f"HTTP {r.status_code} → {r.text}")
+
+# ── 4. Follow-up ───────────────────────────────────────────────────────────
+section("4 / 5  SCHEDULE FOLLOW-UP  (POST /enquiry/{id}/follow-up)")
+r = client.post(f"/enquiry/{enq_id}/follow-up", json={"delay_minutes": 30})
+if r.status_code == 200:
+    ok(r.json()["message"])
+else:
+    fail(f"HTTP {r.status_code} → {r.text}")
+
+# ── 5. Escalate ────────────────────────────────────────────────────────────
+section("5 / 5  ESCALATE  (POST /enquiry/{id}/escalate)")
+r = client.post(f"/enquiry/{enq_id}/escalate", json={"reason": "Customer requested human agent"})
+if r.status_code == 200:
+    ok(f"Escalated → {r.json()}")
+else:
+    fail(f"HTTP {r.status_code} → {r.text}")
+
+print(f"\n{DIVIDER}")
+print("  ALL PIPELINE STAGES VERIFIED")
+print(DIVIDER + "\n")

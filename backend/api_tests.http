@@ -1,0 +1,121 @@
+### Closira API — End-to-End Test File
+### Works with VS Code REST Client extension or JetBrains HTTP Client
+### Replace {{enquiry_id}} with the job_id returned from POST /enquiry
+
+@base = http://localhost:8000
+
+# ─────────────────────────────────────────────
+# 1. Health Check
+# ─────────────────────────────────────────────
+GET {{base}}/health
+Accept: application/json
+
+###
+
+# ─────────────────────────────────────────────
+# 2. Create Enquiry — Booking (expects: qualified + booking_enquiry SOP)
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry
+Content-Type: application/json
+
+{
+  "channel": "WhatsApp",
+  "customer_name": "Sarah Miller",
+  "message": "Hi! I'd love to book an appointment for tomorrow afternoon."
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 3. Create Enquiry — Pricing (expects: qualified + pricing_question SOP)
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry
+Content-Type: application/json
+
+{
+  "channel": "email",
+  "customer_name": "Elena Rostova",
+  "message": "Could you send me a quote for the enterprise tier? What are your rates?"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 4. Create Enquiry — No SOP match (expects: auto-escalated)
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry
+Content-Type: application/json
+
+{
+  "channel": "call",
+  "customer_name": "John Davis",
+  "message": "xyz completely unrelated random text with no SOP keywords at all"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 5. Schedule Follow-up
+# Replace enq_XXXXXXXX with actual job_id from step 2
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry/enq_XXXXXXXX/follow-up
+Content-Type: application/json
+
+{
+  "delay_minutes": 30,
+  "message_template": "Hi {{customer_name}}, just following up on your enquiry!"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 6. Escalate Enquiry
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry/enq_XXXXXXXX/escalate
+Content-Type: application/json
+
+{
+  "reason": "Customer explicitly requested to speak with a human agent."
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 7. Get Full History + Timeline
+# ─────────────────────────────────────────────
+GET {{base}}/enquiry/enq_XXXXXXXX/history
+Accept: application/json
+
+###
+
+# ─────────────────────────────────────────────
+# 8. Error cases — 404 on bad ID
+# ─────────────────────────────────────────────
+GET {{base}}/enquiry/enq_doesnotexist/history
+Accept: application/json
+
+###
+
+# ─────────────────────────────────────────────
+# 9. Error cases — invalid channel enum
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry
+Content-Type: application/json
+
+{
+  "channel": "fax",
+  "customer_name": "Test User",
+  "message": "This should return a 422 validation error"
+}
+
+###
+
+# ─────────────────────────────────────────────
+# 10. Error cases — missing required field
+# ─────────────────────────────────────────────
+POST {{base}}/enquiry
+Content-Type: application/json
+
+{
+  "channel": "email"
+}

@@ -6,15 +6,25 @@
     "status": "Escalated",
     "urgency": "High",
     "reason": "Pricing complaint",
+    "missed": false,
     "receivedAt": "2026-05-23T09:14:00Z",
     "message": "Hello! I would love to book a private slot or schedule an appointment tomorrow afternoon. However, your quoted price seems way higher than what was advertised.",
     "summary": "Customer unhappy with quote, requested manager.",
     "suggested_response": "I understand your concern about the pricing, Sarah. Let me connect you with a manager right away to look into this for you.",
     "matched_sop": "Booking Enquiry & Pricing Dispute",
     "timeline": [
-      {"event": "Enquiry Ingested", "timestamp": "2026-05-23T09:14:00Z"},
-      {"event": "SOP Checked: Booking / Pricing Keywords Found", "timestamp": "2026-05-23T09:14:02Z"},
-      {"event": "Escalation Flagged: Price Discrepancy", "timestamp": "2026-05-23T09:14:05Z"}
+      {
+        "event": "Enquiry Ingested",
+        "timestamp": "2026-05-23T09:14:00Z"
+      },
+      {
+        "event": "SOP Checked: Booking / Pricing Keywords Found",
+        "timestamp": "2026-05-23T09:14:02Z"
+      },
+      {
+        "event": "Escalation Flagged: Price Discrepancy",
+        "timestamp": "2026-05-23T09:14:05Z"
+      }
     ]
   },
   {
@@ -24,13 +34,17 @@
     "status": "New",
     "urgency": "Medium",
     "reason": "Missed Call Callback",
+    "missed": true,
     "receivedAt": "2026-05-23T11:02:00Z",
     "message": "Voicemail left: Interested in scheduling an after-hours property tour this weekend.",
     "summary": "Inbound call missed during off-hours regarding tour booking.",
     "suggested_response": "Hi John, sorry we missed your call! I see you are interested in a weekend tour. Would Saturday at 2 PM work?",
     "matched_sop": "After-Hours Inbound Call",
     "timeline": [
-      {"event": "Missed Call Logged", "timestamp": "2026-05-23T11:02:00Z"}
+      {
+        "event": "Missed Call Logged",
+        "timestamp": "2026-05-23T11:02:00Z"
+      }
     ]
   },
   {
@@ -40,14 +54,73 @@
     "status": "Qualified",
     "urgency": "Low",
     "reason": "Standard B2B Quote Request",
+    "missed": false,
     "receivedAt": "2026-05-23T07:45:00Z",
     "message": "Please send over your standard corporate enterprise deck and tier-2 service level agreement documents.",
     "summary": "Corporate client asking for basic documentation pack.",
     "suggested_response": "Hello Elena, thank you for reaching out. Attached is our corporate deck and standard SLA framework.",
     "matched_sop": "Pricing & Material Request",
     "timeline": [
-      {"event": "Email Received", "timestamp": "2026-05-23T07:45:00Z"},
-      {"event": "SOP Matched: Material Sent Automatically", "timestamp": "2026-05-23T07:46:00Z"}
+      {
+        "event": "Email Received",
+        "timestamp": "2026-05-23T07:45:00Z"
+      },
+      {
+        "event": "SOP Matched: Material Sent Automatically",
+        "timestamp": "2026-05-23T07:46:00Z"
+      }
+    ]
+  },
+  {
+    "id": "enq_004",
+    "customer_name": "Ravi Mehta",
+    "channel": "WhatsApp",
+    "status": "New",
+    "urgency": "High",
+    "reason": "Complaint — Service Not Delivered",
+    "missed": true,
+    "receivedAt": "2026-05-23T08:30:00Z",
+    "message": "This is completely unacceptable. I paid for the service two weeks ago and nothing has been delivered. I want a refund immediately.",
+    "summary": "Customer demanding refund due to undelivered service. High urgency.",
+    "suggested_response": "Ravi, I sincerely apologise for this experience. I am escalating this to our operations team right now and we will resolve this within 24 hours.",
+    "matched_sop": "Complaint & Refund Request",
+    "timeline": [
+      {
+        "event": "Enquiry Ingested",
+        "timestamp": "2026-05-23T08:30:00Z"
+      },
+      {
+        "event": "SOP Matched: Complaint Keywords Detected",
+        "timestamp": "2026-05-23T08:30:03Z"
+      }
+    ]
+  },
+  {
+    "id": "enq_005",
+    "customer_name": "Priya Nair",
+    "channel": "Email",
+    "status": "Qualified",
+    "urgency": "Low",
+    "reason": "General Information Request",
+    "missed": false,
+    "receivedAt": "2026-05-23T06:55:00Z",
+    "message": "Hi, could you send me your product brochure and information about your SLA terms for mid-size businesses?",
+    "summary": "Standard information request from a potential mid-market client.",
+    "suggested_response": "Hi Priya! Happy to help. I will send over our product brochure and SLA documentation for mid-size business plans shortly.",
+    "matched_sop": "General Information Request",
+    "timeline": [
+      {
+        "event": "Email Received",
+        "timestamp": "2026-05-23T06:55:00Z"
+      },
+      {
+        "event": "SOP Matched: Info Request Keywords",
+        "timestamp": "2026-05-23T06:55:04Z"
+      },
+      {
+        "event": "Documentation Queued for Dispatch",
+        "timestamp": "2026-05-23T06:55:10Z"
+      }
     ]
   }
 ]
