@@ -1,41 +1,25 @@
-﻿import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
-import { MOCK_DATA } from '../../mock/mockApi';
-import { ChannelBadge } from '../../components/StatusBadge';
+﻿import React from 'react';
+import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import { ChannelBadge } from '../../components/Badges';
+import data from '../../mock/enquiries.json';
 
 export default function EscalationsScreen() {
-  const [escalations, setEscalations] = useState(
-    MOCK_DATA.enquiries.filter(e => e.status === 'escalated')
-  );
-
-  const handleResolve = (id) => {
-    setEscalations(prev => prev.filter(item => item.id !== id));
-    Alert.alert("Pipeline Action", "Enquiry marked as resolved. Human handoff loop safely closed.");
-  };
+  const escalations = data.filter(i => i.status.toLowerCase() === 'escalated');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Active Agent Hand-offs</Text>
-      <Text style={styles.caption}>Anomalies requiring high-priority human override actions.</Text>
-
+      <Text style={styles.title}>Critical Agent Escalations</Text>
       <FlatList
         data={escalations}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.alertCard}>
+          <View style={styles.card}>
+            <Text style={styles.urgency}>⚠️ URGENCY: HIGH</Text>
+            <Text style={styles.name}>{item.customer_name}</Text>
+            <Text style={styles.reason}>Reason: {item.reason}</Text>
             <View style={styles.row}>
-              <Text style={styles.name}>{item.customer_name}</Text>
-              <View style={[styles.urgencyDot, { backgroundColor: item.urgency === 'high' ? '#EF4444' : '#F59E0B' }]} />
-            </View>
-            
-            <Text style={styles.reasonLabel}>Escalation Trigger Reason:</Text>
-            <Text style={styles.reasonText}>{item.escalation_reason || 'Unmapped signature breakdown'}</Text>
-            
-            <View style={[styles.row, { marginTop: 12 }]}>
               <ChannelBadge channel={item.channel} />
-              <TouchableOpacity style={styles.resolveBtn} onPress={() => handleResolve(item.id)}>
-                <Text style={styles.btnText}>Mark Resolved</Text>
-              </TouchableOpacity>
+              <Button title="Resolve Case" color="#15803D" onPress={() => alert('Resolved')} />
             </View>
           </View>
         )}
@@ -43,17 +27,12 @@ export default function EscalationsScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC', padding: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: '#0F172A', marginTop: 24 },
-  caption: { fontSize: 13, color: '#64748B', marginBottom: 16 },
-  alertCard: { backgroundColor: '#FFFFFF', padding: 16, borderRadius: 8, marginBottom: 12, borderColor: '#FECACA', borderWidth: 1, borderLeftWidth: 4, borderLeftColor: '#EF4444' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
-  urgencyDot: { width: 10, height: 10, borderRadius: 5 },
-  reasonLabel: { fontSize: 11, fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', marginTop: 10 },
-  reasonText: { fontSize: 13, color: '#DC2626', fontWeight: '500', marginTop: 2 },
-  resolveBtn: { backgroundColor: '#10B981', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 6 },
-  btnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' }
+  container: { flex: 1, backgroundColor: '#F9FAFB', padding: 16 },
+  title: { fontSize: 20, fontWeight: '700', marginBottom: 12, color: '#111827' },
+  card: { backgroundColor: '#FFF', padding: 14, borderRadius: 8, marginVertical: 6, borderLeftWidth: 4, borderLeftColor: '#B91C1C', borderWidth: 1, borderColor: '#E5E7EB' },
+  urgency: { fontSize: 11, fontWeight: '700', color: '#B91C1C' },
+  name: { fontSize: 16, fontWeight: '600', marginTop: 4, color: '#111827' },
+  reason: { fontSize: 13, color: '#4B5563', marginVertical: 4 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }
 });
